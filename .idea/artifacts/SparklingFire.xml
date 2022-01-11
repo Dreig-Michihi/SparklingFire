@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SparklingFire">
+    <output-path>$PROJECT_DIR$/../../ProjectKorra/Abilities</output-path>
+    <root id="archive" name="SparklingFire.jar">
+      <element id="module-output" name="SparklingFire" />
+    </root>
+  </artifact>
+</component>
