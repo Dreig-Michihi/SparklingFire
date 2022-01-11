@@ -322,7 +322,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                         ((Creeper) entity).ignite();
                     }
                     entity.setFireTicks(this.fireTicks * 20);
-                    if (placeFireOnEntityDamage) {
+                    if (placeFireOnEntityDamage&&!GeneralMethods.isRegionProtectedFromBuild(this, entity.getLocation())) {
                         if (!entity.getLocation().getBlock().getType().isSolid())
                             createTempFire(entity.getLocation());
                         if(entitySpreadsFire){
