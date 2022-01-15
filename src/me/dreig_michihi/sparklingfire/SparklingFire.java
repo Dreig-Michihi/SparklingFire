@@ -294,7 +294,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                                 else
                                     block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                                 block.setBlockData(candle);
-                        } else if (block.getType() == Material.BREWING_STAND) {
+                        } else if (fillBrewingStands && block.getType() == Material.BREWING_STAND) {
                             BrewingStand brewingStand = ((BrewerInventory) ((InventoryHolder) block.getState()).getInventory()).getHolder();
                             assert brewingStand != null;
                             //player.sendMessage("BrewingStand fuel lvl before:" + brewingStand.getFuelLevel());
@@ -357,6 +357,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                  * the entity will take damage and the ability will stop progressing.
                  */
                 if ((entity instanceof LivingEntity) && entity.getUniqueId() != player.getUniqueId()) {
+                    if(activateCreepers)
                     if (entity instanceof Creeper) {
                         ((Creeper) entity).ignite();
                         remove();
