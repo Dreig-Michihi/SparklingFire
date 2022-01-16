@@ -1,32 +1,31 @@
 package me.dreig_michihi.sparklingfire;
 
 import com.projectkorra.projectkorra.Element;
-import com.projectkorra.projectkorra.ability.*;
+import com.projectkorra.projectkorra.GeneralMethods;
+import com.projectkorra.projectkorra.ProjectKorra;
+import com.projectkorra.projectkorra.ability.AddonAbility;
+import com.projectkorra.projectkorra.ability.BlueFireAbility;
+import com.projectkorra.projectkorra.ability.ElementalAbility;
+import com.projectkorra.projectkorra.ability.FireAbility;
 import com.projectkorra.projectkorra.configuration.ConfigManager;
+import com.projectkorra.projectkorra.util.DamageHandler;
+import com.projectkorra.projectkorra.util.ParticleEffect;
 import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Lightable;
-import org.bukkit.block.data.type.Cake;
 import org.bukkit.block.data.type.Candle;
 import org.bukkit.block.data.type.Fire;
 import org.bukkit.entity.*;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.BrewerInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import com.projectkorra.projectkorra.GeneralMethods;
-import com.projectkorra.projectkorra.ProjectKorra;
-import com.projectkorra.projectkorra.util.DamageHandler;
-import com.projectkorra.projectkorra.util.ParticleEffect;
-
 import java.util.Objects;
-import java.util.Set;
 
 /*
  * extends FireAbility
@@ -46,10 +45,11 @@ public class SparklingFire extends FireAbility implements AddonAbility {
      * If you have your own way for organiztion, then use that.
      */
     private Listener SFL;
+    private Permission perm;
     static String path = "ExtraAbilities.Dreig_Michihi.Fire.SparklingFire.";
+
     private Location location;
     private Location origin;
-    private Vector direction;
     private double damage;
     private double range;
     private int fireTicks;
@@ -62,10 +62,10 @@ public class SparklingFire extends FireAbility implements AddonAbility {
     private short furnaceBurnTime;
     private boolean activateCreepers;
     private boolean fillBrewingStands;
-    private Permission perm;
     private boolean placeFireOnEntityDamage;
     private boolean entitySpreadsFire;
     private int brewingFuel;
+    private static boolean litCandles;
 
     /*
      * The constructor used to determine who the player is and to start the ability.
@@ -134,8 +134,8 @@ public class SparklingFire extends FireAbility implements AddonAbility {
         //this.direction = player.getLocation().getDirection();
     }
     private void applyModifiers(double damage, double range) {
-        int damageMod = 0;
-        int rangeMod = 0;
+        int damageMod;
+        int rangeMod;
 
         damageMod = (int) (this.getDayFactor(damage) - damage);
         rangeMod = (int) (this.getDayFactor(range) - range);
@@ -188,6 +188,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
             remove();
             return;
         }
+        Vector direction;
         if (!Charged) {
             if (!bPlayer.getBoundAbilityName().equalsIgnoreCase(this.getName())) {
                 remove();
@@ -229,7 +230,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                  * English: If the location of the ability is equal to that of a block, stop.
                  */
                 playFirebendingParticles(location, 1, 0.1, 0.1, 0.1);
-                if ((GeneralMethods.isSolid(location.getBlock())||location.getBlock().getBlockData() instanceof Candle)
+                if ((GeneralMethods.isSolid(location.getBlock())||isCandle(location.getBlock()))
                         && !isWater(location.getBlock())) {
                     Block block = location.getBlock();
                     if (!GeneralMethods.isRegionProtectedFromBuild(this, location)) {
@@ -250,8 +251,8 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                             block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                         } else if (block.getType() == Material.TNT) {
                             location.getBlock().setType(Material.AIR);
-                            block.getLocation().getWorld().playSound(block.getLocation(), Sound.ENTITY_TNT_PRIMED, 1, 1);
-                            location.getWorld().spawn(location, TNTPrimed.class);
+                            Objects.requireNonNull(block.getLocation().getWorld()).playSound(block.getLocation(), Sound.ENTITY_TNT_PRIMED, 1, 1);
+                            Objects.requireNonNull(location.getWorld()).spawn(location, TNTPrimed.class);
                             block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                         } else if (block.getType() == Material.CAMPFIRE
                                 || block.getType() == Material.SOUL_CAMPFIRE) {
@@ -262,7 +263,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                             else
                                 block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                             block.setBlockData(campfire);
-                        } else if (block.getBlockData() instanceof Candle) {
+                        } else if (isCandle(block)) {
                             Candle candle = (Candle) block.getBlockData();
                             candle.setLit(!candle.isLit());
                             if (!candle.isLit())
@@ -270,7 +271,8 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                             else
                                 block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                             block.setBlockData(candle);
-                        } else if(block.getType().equals(Material.BLACK_CANDLE_CAKE)
+                        } else if (litCandles)
+                            if(block.getType().equals(Material.BLACK_CANDLE_CAKE)
                                 ||block.getType().equals(Material.BLUE_CANDLE_CAKE)
                                 ||block.getType().equals(Material.BROWN_CANDLE_CAKE)
                                 ||block.getType().equals(Material.CYAN_CANDLE_CAKE)
@@ -287,13 +289,13 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                                 ||block.getType().equals(Material.WHITE_CANDLE_CAKE)
                                 ||block.getType().equals(Material.YELLOW_CANDLE_CAKE)
                                 ||block.getType().equals(Material.CANDLE_CAKE)) {
-                                Lightable candle = (Lightable) block.getBlockData();
-                                candle.setLit(!candle.isLit());
-                                if (!candle.isLit())
-                                    block.getWorld().playSound(block.getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1, 1);
-                                else
-                                    block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
-                                block.setBlockData(candle);
+                            Lightable candle = (Lightable) block.getBlockData();
+                            candle.setLit(!candle.isLit());
+                            if (!candle.isLit())
+                                block.getWorld().playSound(block.getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1, 1);
+                            else
+                                block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
+                            block.setBlockData(candle);
                         } else if (fillBrewingStands && block.getType() == Material.BREWING_STAND) {
                             BrewingStand brewingStand = ((BrewerInventory) ((InventoryHolder) block.getState()).getInventory()).getHolder();
                             assert brewingStand != null;
@@ -359,6 +361,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                 if ((entity instanceof LivingEntity) && entity.getUniqueId() != player.getUniqueId()) {
                     if(activateCreepers)
                     if (entity instanceof Creeper) {
+                        entity.getWorld().playSound(entity.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                         ((Creeper) entity).ignite();
                         remove();
                         return;
@@ -403,6 +406,12 @@ public class SparklingFire extends FireAbility implements AddonAbility {
 
     }
 
+    public static boolean isCandle(Block block) {
+        if (litCandles)
+            return block.getBlockData() instanceof Candle;
+        else
+            return false;
+    }
     /*
      * The duration of the cooldown. This is useful to some aspects of the ProjectKorra API (like bending previews)
      * and for other addon developers to use. Set this to return a 'long' variable representing your cooldown.
@@ -441,8 +450,14 @@ public class SparklingFire extends FireAbility implements AddonAbility {
         return "SparklingFire is a firebending technique that creates a small ball" +
                 " of sparkling flame that is very easy to control.\n" +
                 "This fire creates a lot of heat, so it is very easy to set" +
-                " something on fire with it. Using this ability, you can activate furnaces," +
-                " create a block of fire, set fire to entity.";
+                " something on fire with it.\n" +
+                "Using this ability, you can activate furnaces," +
+                " create a block of fire," +
+                " set fire to entity," +
+                " explode creepers," +
+                " charge brewing stands' fuel," +
+                " control lit of campfires and candles," +
+                " activate nether portals.";
     }
 
     /*
@@ -470,7 +485,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
      */
     @Override
     public String getVersion() {
-        return ChatColor.GOLD +"1.2";
+        return ChatColor.GOLD +"1.3";
     }
 
     /*
@@ -513,6 +528,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
         ConfigManager.defaultConfig.get().addDefault(path+"PlaceFireOnEntityDamage", true);
         ConfigManager.defaultConfig.get().addDefault(path+"EntitySpreadsFire", true);
         ConfigManager.defaultConfig.save();
+        litCandles = !ProjectKorra.plugin.getServer().getVersion().contains("1.16");
         this.perm = new Permission("bending.ability.SparklingFire");
         this.perm.setDefault(PermissionDefault.TRUE);
         ProjectKorra.log.info(this.getName() + " by " + this.getAuthor() + " " + this.getVersion() + " has been loaded!");
