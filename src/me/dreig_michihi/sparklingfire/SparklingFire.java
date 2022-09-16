@@ -7,6 +7,7 @@ import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.BlueFireAbility;
 import com.projectkorra.projectkorra.ability.ElementalAbility;
 import com.projectkorra.projectkorra.ability.FireAbility;
+import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.configuration.ConfigManager;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
@@ -50,12 +51,19 @@ public class SparklingFire extends FireAbility implements AddonAbility {
 
     private Location location;
     private Location origin;
+    @Attribute(Attribute.DAMAGE)
     private double damage;
+    @Attribute(Attribute.RANGE)
     private double range;
+    @Attribute(Attribute.FIRE_TICK)
     private int fireTicks;
+    @Attribute(Attribute.SPEED)
     private double speed;
+    @Attribute(Attribute.WIDTH)
     private double collisionRadius;
+    @Attribute(Attribute.CHARGE_DURATION)
     private long chargeTime;
+    @Attribute(Attribute.COOLDOWN)
     private long cooldown;
     private boolean Charged;
     private long startTime;
@@ -101,19 +109,19 @@ public class SparklingFire extends FireAbility implements AddonAbility {
      * You create variables above the constructor and here is where you define them.
      */
     private void setFields() {
-        damage = ConfigManager.defaultConfig.get().getDouble(path+"Damage");
-        range = ConfigManager.defaultConfig.get().getDouble(path+"Range");
-        fireTicks = ConfigManager.defaultConfig.get().getInt(path+"FireTicks");
-        speed = ConfigManager.defaultConfig.get().getDouble(path+"Speed");
-        collisionRadius = ConfigManager.defaultConfig.get().getDouble(path+"CollisionRadius");
-        cooldown = ConfigManager.defaultConfig.get().getLong(path+"Cooldown");
-        chargeTime = ConfigManager.defaultConfig.get().getLong(path+"ChargeTime");
-        furnaceBurnTime = (short)ConfigManager.defaultConfig.get().getInt(path+"FurnaceBurnTime");
-        activateCreepers = ConfigManager.defaultConfig.get().getBoolean(path+"ActivateCreepers");
-        fillBrewingStands = ConfigManager.defaultConfig.get().getBoolean(path+"FillBrewingStands");
-        placeFireOnEntityDamage = ConfigManager.defaultConfig.get().getBoolean(path+"PlaceFireOnEntityDamage");
-        entitySpreadsFire = ConfigManager.defaultConfig.get().getBoolean(path+"EntitySpreadsFire");
-        brewingFuel = ConfigManager.defaultConfig.get().getInt(path+"BrewingFuel");
+        damage = ConfigManager.defaultConfig.get().getDouble(path + "Damage");
+        range = ConfigManager.defaultConfig.get().getDouble(path + "Range");
+        fireTicks = ConfigManager.defaultConfig.get().getInt(path + "FireTicks");
+        speed = ConfigManager.defaultConfig.get().getDouble(path + "Speed");
+        collisionRadius = ConfigManager.defaultConfig.get().getDouble(path + "CollisionRadius");
+        cooldown = ConfigManager.defaultConfig.get().getLong(path + "Cooldown");
+        chargeTime = ConfigManager.defaultConfig.get().getLong(path + "ChargeTime");
+        furnaceBurnTime = (short) ConfigManager.defaultConfig.get().getInt(path + "FurnaceBurnTime");
+        activateCreepers = ConfigManager.defaultConfig.get().getBoolean(path + "ActivateCreepers");
+        fillBrewingStands = ConfigManager.defaultConfig.get().getBoolean(path + "FillBrewingStands");
+        placeFireOnEntityDamage = ConfigManager.defaultConfig.get().getBoolean(path + "PlaceFireOnEntityDamage");
+        entitySpreadsFire = ConfigManager.defaultConfig.get().getBoolean(path + "EntitySpreadsFire");
+        brewingFuel = ConfigManager.defaultConfig.get().getInt(path + "BrewingFuel");
         applyModifiers(this.damage, this.range);
         this.Charged = false;
         this.startTime = System.currentTimeMillis();
@@ -133,6 +141,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
          */
         //this.direction = player.getLocation().getDirection();
     }
+
     private void applyModifiers(double damage, double range) {
         int damageMod;
         int rangeMod;
@@ -152,7 +161,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
 
     @Override
     public void remove() {
-        if(this.Charged) {
+        if (this.Charged) {
             if (bPlayer.canUseSubElement(Element.BLUE_FIRE))
                 ParticleEffect.SOUL_FIRE_FLAME.display(location, 20, 0.1, 0.1, 0.1, 0.2);
             else
@@ -183,7 +192,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
             return;
         }
         if (isWater(this.location.getBlock())) {
-            ParticleEffect.CLOUD.display(this.location,7,0.3,0.3,0.3,0.05);
+            ParticleEffect.CLOUD.display(this.location, 7, 0.3, 0.3, 0.3, 0.05);
             Objects.requireNonNull(location.getWorld()).playSound(location, Sound.BLOCK_FIRE_EXTINGUISH, 1, 1);
             remove();
             return;
@@ -230,7 +239,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                  * English: If the location of the ability is equal to that of a block, stop.
                  */
                 playFirebendingParticles(location, 1, 0.1, 0.1, 0.1);
-                if ((GeneralMethods.isSolid(location.getBlock())||isCandle(location.getBlock()))
+                if ((GeneralMethods.isSolid(location.getBlock()) || isCandle(location.getBlock()))
                         && !isWater(location.getBlock())) {
                     Block block = location.getBlock();
                     if (!GeneralMethods.isRegionProtectedFromBuild(this, location)) {
@@ -272,82 +281,82 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                                 block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                             block.setBlockData(candle);
                         } else if (litCandles)
-                            if(block.getType().equals(Material.BLACK_CANDLE_CAKE)
-                                ||block.getType().equals(Material.BLUE_CANDLE_CAKE)
-                                ||block.getType().equals(Material.BROWN_CANDLE_CAKE)
-                                ||block.getType().equals(Material.CYAN_CANDLE_CAKE)
-                                ||block.getType().equals(Material.GRAY_CANDLE_CAKE)
-                                ||block.getType().equals(Material.GREEN_CANDLE_CAKE)
-                                ||block.getType().equals(Material.LIGHT_BLUE_CANDLE_CAKE)
-                                ||block.getType().equals(Material.LIGHT_GRAY_CANDLE_CAKE)
-                                ||block.getType().equals(Material.LIME_CANDLE_CAKE)
-                                ||block.getType().equals(Material.MAGENTA_CANDLE_CAKE)
-                                ||block.getType().equals(Material.ORANGE_CANDLE_CAKE)
-                                ||block.getType().equals(Material.PINK_CANDLE_CAKE)
-                                ||block.getType().equals(Material.PURPLE_CANDLE_CAKE)
-                                ||block.getType().equals(Material.RED_CANDLE_CAKE)
-                                ||block.getType().equals(Material.WHITE_CANDLE_CAKE)
-                                ||block.getType().equals(Material.YELLOW_CANDLE_CAKE)
-                                ||block.getType().equals(Material.CANDLE_CAKE)) {
-                            Lightable candle = (Lightable) block.getBlockData();
-                            candle.setLit(!candle.isLit());
-                            if (!candle.isLit())
-                                block.getWorld().playSound(block.getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1, 1);
-                            else
-                                block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
-                            block.setBlockData(candle);
-                        } else if (fillBrewingStands && block.getType() == Material.BREWING_STAND) {
-                            BrewingStand brewingStand = ((BrewerInventory) ((InventoryHolder) block.getState()).getInventory()).getHolder();
-                            assert brewingStand != null;
-                            //player.sendMessage("BrewingStand fuel lvl before:" + brewingStand.getFuelLevel());
-                            brewingStand.setFuelLevel(Math.min((brewingStand.getFuelLevel() + brewingFuel), 20));
-                            //player.sendMessage("BrewingStand fuel lvl after:" + brewingStand.getFuelLevel());
-                            brewingStand.update();
-                            ParticleEffect.FLAME.display(block.getLocation().add(.5, .5, .5), 10, 0.5, 0.5, 0.5, 0.05);
-                            //block.getWorld().playSound(block.getLocation(),Sound.ITEM_FLINTANDSTEEL_USE,1,1);
-                            block.getWorld().playSound(block.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 1);
-                        } else {
-                            if (block.getType() == Material.SOUL_SOIL || block.getType() == Material.SOUL_SAND) {
-                                if (ElementalAbility.isAir(block.getRelative(BlockFace.UP).getType()))
-                                        block.getRelative(BlockFace.UP).setType(Material.SOUL_FIRE);
+                            if (block.getType().equals(Material.BLACK_CANDLE_CAKE)
+                                    || block.getType().equals(Material.BLUE_CANDLE_CAKE)
+                                    || block.getType().equals(Material.BROWN_CANDLE_CAKE)
+                                    || block.getType().equals(Material.CYAN_CANDLE_CAKE)
+                                    || block.getType().equals(Material.GRAY_CANDLE_CAKE)
+                                    || block.getType().equals(Material.GREEN_CANDLE_CAKE)
+                                    || block.getType().equals(Material.LIGHT_BLUE_CANDLE_CAKE)
+                                    || block.getType().equals(Material.LIGHT_GRAY_CANDLE_CAKE)
+                                    || block.getType().equals(Material.LIME_CANDLE_CAKE)
+                                    || block.getType().equals(Material.MAGENTA_CANDLE_CAKE)
+                                    || block.getType().equals(Material.ORANGE_CANDLE_CAKE)
+                                    || block.getType().equals(Material.PINK_CANDLE_CAKE)
+                                    || block.getType().equals(Material.PURPLE_CANDLE_CAKE)
+                                    || block.getType().equals(Material.RED_CANDLE_CAKE)
+                                    || block.getType().equals(Material.WHITE_CANDLE_CAKE)
+                                    || block.getType().equals(Material.YELLOW_CANDLE_CAKE)
+                                    || block.getType().equals(Material.CANDLE_CAKE)) {
+                                Lightable candle = (Lightable) block.getBlockData();
+                                candle.setLit(!candle.isLit());
+                                if (!candle.isLit())
+                                    block.getWorld().playSound(block.getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1, 1);
+                                else
+                                    block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
+                                block.setBlockData(candle);
+                            } else if (fillBrewingStands && block.getType() == Material.BREWING_STAND) {
+                                BrewingStand brewingStand = ((BrewerInventory) ((InventoryHolder) block.getState()).getInventory()).getHolder();
+                                assert brewingStand != null;
+                                //player.sendMessage("BrewingStand fuel lvl before:" + brewingStand.getFuelLevel());
+                                brewingStand.setFuelLevel(Math.min((brewingStand.getFuelLevel() + brewingFuel), 20));
+                                //player.sendMessage("BrewingStand fuel lvl after:" + brewingStand.getFuelLevel());
+                                brewingStand.update();
+                                ParticleEffect.FLAME.display(block.getLocation().add(.5, .5, .5), 10, 0.5, 0.5, 0.5, 0.05);
+                                //block.getWorld().playSound(block.getLocation(),Sound.ITEM_FLINTANDSTEEL_USE,1,1);
+                                block.getWorld().playSound(block.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 1);
                             } else {
-                                if(!block.getType().isFlammable()){
+                                if (block.getType() == Material.SOUL_SOIL || block.getType() == Material.SOUL_SAND) {
                                     if (ElementalAbility.isAir(block.getRelative(BlockFace.UP).getType()))
-                                        block.getRelative(BlockFace.UP).setType(Material.FIRE);
+                                        block.getRelative(BlockFace.UP).setType(Material.SOUL_FIRE);
                                 } else {
-                                    BlockFace closestFace = BlockFace.SELF;
-                                    BlockFace[] blockFaces = new BlockFace[]{
-                                            BlockFace.UP,
-                                            BlockFace.DOWN,
-                                            BlockFace.EAST,
-                                            BlockFace.WEST,
-                                            BlockFace.NORTH,
-                                            BlockFace.SOUTH};
-                                    Block closest = origin.clone().add(0,10,0).getBlock();
-                                    for(BlockFace check: blockFaces){
-                                        Block b = block.getRelative(check);
-                                        if(ElementalAbility.isAir(b.getType())
-                                        &&b.getLocation().add(.5,.5,.5).distanceSquared(oldLoc)
-                                                <closest.getLocation().add(.5,.5,.5).distanceSquared(oldLoc)) {
-                                            closest = b;
-                                            closestFace=check;
+                                    if (!block.getType().isFlammable()) {
+                                        if (ElementalAbility.isAir(block.getRelative(BlockFace.UP).getType()))
+                                            block.getRelative(BlockFace.UP).setType(Material.FIRE);
+                                    } else {
+                                        BlockFace closestFace = BlockFace.SELF;
+                                        BlockFace[] blockFaces = new BlockFace[]{
+                                                BlockFace.UP,
+                                                BlockFace.DOWN,
+                                                BlockFace.EAST,
+                                                BlockFace.WEST,
+                                                BlockFace.NORTH,
+                                                BlockFace.SOUTH};
+                                        Block closest = origin.clone().add(0, 10, 0).getBlock();
+                                        for (BlockFace check : blockFaces) {
+                                            Block b = block.getRelative(check);
+                                            if (ElementalAbility.isAir(b.getType())
+                                                    && b.getLocation().add(.5, .5, .5).distanceSquared(oldLoc)
+                                                    < closest.getLocation().add(.5, .5, .5).distanceSquared(oldLoc)) {
+                                                closest = b;
+                                                closestFace = check;
+                                            }
                                         }
-                                    }
-                                    if(closest.equals(origin.clone().add(0,10,0).getBlock()))
-                                        closest=block.getRelative(BlockFace.UP);
-                                    if (ElementalAbility.isAir(closest.getType())) {
-                                        closest.setType(Material.FIRE);
-                                        if (closest.getType().equals(Material.FIRE)) {
-                                            Fire fire = (Fire) closest.getBlockData();
-                                            if (!closestFace.equals(BlockFace.UP))
-                                                fire.setFace(closestFace.getOppositeFace(), true);
-                                            closest.setBlockData(fire);
+                                        if (closest.equals(origin.clone().add(0, 10, 0).getBlock()))
+                                            closest = block.getRelative(BlockFace.UP);
+                                        if (ElementalAbility.isAir(closest.getType())) {
+                                            closest.setType(Material.FIRE);
+                                            if (closest.getType().equals(Material.FIRE)) {
+                                                Fire fire = (Fire) closest.getBlockData();
+                                                if (!closestFace.equals(BlockFace.UP))
+                                                    fire.setFace(closestFace.getOppositeFace(), true);
+                                                closest.setBlockData(fire);
+                                            }
                                         }
                                     }
                                 }
+                                block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
                             }
-                            block.getWorld().playSound(block.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
-                        }
                     }
                     remove();
                     return;
@@ -359,28 +368,27 @@ public class SparklingFire extends FireAbility implements AddonAbility {
                  * the entity will take damage and the ability will stop progressing.
                  */
                 if ((entity instanceof LivingEntity) && entity.getUniqueId() != player.getUniqueId()) {
-                    if(activateCreepers)
-                    if (entity instanceof Creeper) {
-                        entity.getWorld().playSound(entity.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
-                        ((Creeper) entity).ignite();
-                        remove();
-                        return;
-                    }
+                    if (activateCreepers)
+                        if (entity instanceof Creeper) {
+                            entity.getWorld().playSound(entity.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1, 1);
+                            ((Creeper) entity).ignite();
+                            remove();
+                            return;
+                        }
                     entity.setFireTicks(this.fireTicks * 20);
-                    if (placeFireOnEntityDamage&&!GeneralMethods.isRegionProtectedFromBuild(this, entity.getLocation())) {
+                    if (placeFireOnEntityDamage && !GeneralMethods.isRegionProtectedFromBuild(this, entity.getLocation())) {
                         if (!entity.getLocation().getBlock().getType().isSolid())
                             createTempFire(entity.getLocation());
-                        if(entitySpreadsFire){
+                        if (entitySpreadsFire) {
                             long startTime = System.currentTimeMillis();
-                            new BukkitRunnable(){
+                            new BukkitRunnable() {
                                 @Override
                                 public void run() {
-                                    if(!entity.isDead()&&entity.getFireTicks()>0&&System.currentTimeMillis()<=startTime+5000) {
+                                    if (!entity.isDead() && entity.getFireTicks() > 0 && System.currentTimeMillis() <= startTime + 5000) {
                                         if (!entity.getLocation().getBlock().getType().isSolid())
-                                            createTempFire(entity.getLocation(),3000);
-                                        ParticleEffect.FLAME.display(entity.getLocation(),5,.5,1.5,0.5,0.1);
-                                    }
-                                    else
+                                            createTempFire(entity.getLocation(), 3000);
+                                        ParticleEffect.FLAME.display(entity.getLocation(), 5, .5, 1.5, 0.5, 0.1);
+                                    } else
                                         this.cancel();
                                 }
                             }.runTaskTimer(ProjectKorra.plugin, 1L, 4L);
@@ -394,8 +402,8 @@ public class SparklingFire extends FireAbility implements AddonAbility {
             if (bPlayer.canUseSubElement(Element.BLUE_FIRE))
                 ParticleEffect.SOUL_FIRE_FLAME.display(location, 5, 0.1, 0.1, 0, 0.3);
             else
-                Objects.requireNonNull(location.getWorld()).spawnParticle(Particle.SMALL_FLAME, location,5, 0.1, 0.1, 0, 0.3);
-                //ParticleEffect.FLAME.display(location, 5, 0.1, 0.1, 0, 0.3);
+                Objects.requireNonNull(location.getWorld()).spawnParticle(Particle.SMALL_FLAME, location, 5, 0.1, 0.1, 0, 0.3);
+            //ParticleEffect.FLAME.display(location, 5, 0.1, 0.1, 0, 0.3);
             playFirebendingSound(location);
         }
 
@@ -412,6 +420,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
         else
             return false;
     }
+
     /*
      * The duration of the cooldown. This is useful to some aspects of the ProjectKorra API (like bending previews)
      * and for other addon developers to use. Set this to return a 'long' variable representing your cooldown.
@@ -476,7 +485,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
      */
     @Override
     public String getAuthor() {
-        return "" + Element.FIRE.getColor() + ChatColor.UNDERLINE + "Dreig_Michihi";
+        return "" + ChatColor.DARK_RED + ChatColor.UNDERLINE + "Dreig_Michihi";
     }
 
     /*
@@ -485,7 +494,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
      */
     @Override
     public String getVersion() {
-        return ChatColor.GOLD +"1.3";
+        return ChatColor.GOLD + "1.3";
     }
 
     /*
@@ -514,19 +523,19 @@ public class SparklingFire extends FireAbility implements AddonAbility {
     public void load() {
         SFL = new SparklingFireListener();
         Bukkit.getPluginManager().registerEvents(this.SFL, ProjectKorra.plugin);
-        ConfigManager.defaultConfig.get().addDefault(path+"Damage", 1);
-        ConfigManager.defaultConfig.get().addDefault(path+"Range", 20);
-        ConfigManager.defaultConfig.get().addDefault(path+"FireTicks", 3);
-        ConfigManager.defaultConfig.get().addDefault(path+"Speed", 1.5);
-        ConfigManager.defaultConfig.get().addDefault(path+"CollisionRadius", 0.5);
-        ConfigManager.defaultConfig.get().addDefault(path+"Cooldown", 2000);
-        ConfigManager.defaultConfig.get().addDefault(path+"ChargeTime", 1000);
-        ConfigManager.defaultConfig.get().addDefault(path+"FurnaceBurnTime", 800);
-        ConfigManager.defaultConfig.get().addDefault(path+"ActivateCreepers", true);
-        ConfigManager.defaultConfig.get().addDefault(path+"FillBrewingStands", true);
-        ConfigManager.defaultConfig.get().addDefault(path+"BrewingFuel", 1);
-        ConfigManager.defaultConfig.get().addDefault(path+"PlaceFireOnEntityDamage", true);
-        ConfigManager.defaultConfig.get().addDefault(path+"EntitySpreadsFire", true);
+        ConfigManager.defaultConfig.get().addDefault(path + "Damage", 1);
+        ConfigManager.defaultConfig.get().addDefault(path + "Range", 20);
+        ConfigManager.defaultConfig.get().addDefault(path + "FireTicks", 3);
+        ConfigManager.defaultConfig.get().addDefault(path + "Speed", 1.5);
+        ConfigManager.defaultConfig.get().addDefault(path + "CollisionRadius", 0.5);
+        ConfigManager.defaultConfig.get().addDefault(path + "Cooldown", 2000);
+        ConfigManager.defaultConfig.get().addDefault(path + "ChargeTime", 1000);
+        ConfigManager.defaultConfig.get().addDefault(path + "FurnaceBurnTime", 800);
+        ConfigManager.defaultConfig.get().addDefault(path + "ActivateCreepers", true);
+        ConfigManager.defaultConfig.get().addDefault(path + "FillBrewingStands", true);
+        ConfigManager.defaultConfig.get().addDefault(path + "BrewingFuel", 1);
+        ConfigManager.defaultConfig.get().addDefault(path + "PlaceFireOnEntityDamage", true);
+        ConfigManager.defaultConfig.get().addDefault(path + "EntitySpreadsFire", true);
         ConfigManager.defaultConfig.save();
         litCandles = !ProjectKorra.plugin.getServer().getVersion().contains("1.16");
         this.perm = new Permission("bending.ability.SparklingFire");
@@ -534,6 +543,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
         ProjectKorra.log.info(this.getName() + " by " + this.getAuthor() + " " + this.getVersion() + " has been loaded!");
 
     }
+
     /*
      * This method is run whenever the ability is disabled from a server.
      * Restart/reload
