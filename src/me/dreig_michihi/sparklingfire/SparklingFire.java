@@ -494,7 +494,7 @@ public class SparklingFire extends FireAbility implements AddonAbility {
      */
     @Override
     public String getVersion() {
-        return ChatColor.GOLD + "1.3";
+        return ChatColor.GOLD + "1.3.1";
     }
 
     /*
